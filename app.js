@@ -17,10 +17,46 @@ const trocarPagina = (pagina) => {
   state.paginaAtual = pagina;
 };
 
-const abrirLogin = () => $("login").hidden = false;
-const fecharLogin = () => $("login").hidden = true;
-const abrirCadastro = () => $("cadastro").hidden = false;
-const fecharCadastro = () => $("cadastro").hidden = true;
+const abrirLogin = () => $("auth-modal").hidden = false;
+const fecharLogin = () => $("auth-modal").hidden = true;
+
+// Trocar entre login e cadastro
+document.addEventListener("click", (e) => {
+  if (e.target.closest(".auth-switch-btn")) {
+    const btn = e.target.closest(".auth-switch-btn");
+    const mode = btn.dataset.mode;
+    
+    // Atualizar botões
+    document.querySelectorAll(".auth-switch-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    
+    // Atualizar formulários
+    document.querySelectorAll(".auth-form").forEach(f => f.classList.remove("active"));
+    
+    if (mode === "login") {
+      $("form-login").classList.add("active");
+    } else {
+      $("form-cadastro").classList.add("active");
+    }
+  }
+}, true);
+
+// Fechar modal ao clicar no botão X
+$("btn-fechar-auth").addEventListener("click", (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  fecharLogin();
+});
+
+// Fechar modal ao clicar fora (no fundo)
+document.addEventListener("click", (e) => {
+  const modal = $("auth-modal");
+  const content = document.querySelector("#auth-modal .modal-content");
+  
+  if (e.target === modal && !content?.contains(e.target)) {
+    fecharLogin();
+  }
+});
 
 /*************************************************
  * MENU / NAVEGAÇÃO
@@ -33,11 +69,55 @@ document.querySelectorAll("[data-page]").forEach(link => {
 });
 
 $("btn-login").addEventListener("click", abrirLogin);
+
+// Usar delegação de eventos para garantir funcionamento
+document.addEventListener("click", (e) => {
+  if (e.target.id === "btn-ir-cadastro") {
+    e.preventDefault();
+    e.stopPropagation();
+    document.querySelectorAll(".auth-switch-btn").forEach(b => b.classList.remove("active"));
+    document.getElementById("btn-switch-cadastro").classList.add("active");
+    document.querySelectorAll(".auth-form").forEach(f => f.classList.remove("active"));
+    $("form-cadastro").classList.add("active");
+  }
+  
+  if (e.target.id === "btn-cancelar-cadastro") {
+    e.preventDefault();
+    e.stopPropagation();
+    document.querySelectorAll(".auth-switch-btn").forEach(b => b.classList.remove("active"));
+    document.getElementById("btn-switch-login").classList.add("active");
+    document.querySelectorAll(".auth-form").forEach(f => f.classList.remove("active"));
+    $("form-login").classList.add("active");
+  }
+  
+  if (e.target.id === "btn-cancelar-login") {
+    e.preventDefault();
+    e.stopPropagation();
+    fecharLogin();
+  }
+  
+  if (e.target.id === "btn-voltar-login") {
+    e.preventDefault();
+    e.stopPropagation();
+    document.querySelectorAll(".auth-switch-btn").forEach(b => b.classList.remove("active"));
+    document.getElementById("btn-switch-login").classList.add("active");
+    document.querySelectorAll(".auth-form").forEach(f => f.classList.remove("active"));
+    $("form-login").classList.add("active");
+  }
+}, true); // Usar captura para prioridade
 $("btn-logout").addEventListener("click", () => {
+  const emailUsuario = state.usuarioLogado?.email || "Usuário";
+  
   localStorage.removeItem("usuarioLogado");
   state.usuarioLogado = null;
+  
+  mostrarNotificacao(`Até logo, ${emailUsuario}! 👋`, "sucesso");
+  
   atualizarMenu();
-  trocarPagina("home");
+  
+  setTimeout(() => {
+    trocarPagina("home");
+  }, 800);
 });
 
 /*************************************************
@@ -53,40 +133,108 @@ const atualizarMenu = () => {
 };
 
 /*************************************************
+ * NOTIFICAÇÕES
+ *************************************************/
+const mostrarNotificacao = (mensagem, tipo = "info") => {
+  const notif = document.createElement("div");
+  notif.style.cssText = `
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    padding: 1rem 1.5rem;
+    background: ${tipo === "sucesso" ? "var(--success)" : tipo === "erro" ? "var(--danger)" : "var(--primary)"};
+    color: white;
+    border-radius: 8px;
+    box-shadow: var(--shadow-lg);
+    z-index: 3000;
+    animation: slideInRight 0.3s ease-out;
+    max-width: 350px;
+    font-weight: 500;
+  `;
+  notif.textContent = mensagem;
+  document.body.appendChild(notif);
+  
+  setTimeout(() => {
+    notif.style.animation = "slideOutRight 0.3s ease-out forwards";
+    setTimeout(() => notif.remove(), 300);
+  }, 3000);
+};
+
+// Adicionar animações ao CSS globalmente
+const style = document.createElement("style");
+style.textContent = `
+  @keyframes slideInRight {
+    from {
+      opacity: 0;
+      transform: translateX(100px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+  
+  @keyframes slideOutRight {
+    to {
+      opacity: 0;
+      transform: translateX(100px);
+    }
+  }
+`;
+document.head.appendChild(style);
+
+/*************************************************
  * CADASTRO
  *************************************************/
 $("form-cadastro").addEventListener("submit", (e) => {
   e.preventDefault();
 
-  const email = $("cad-email").value;
-  const tipo = document.querySelector('input[name="cad-tipo"]:checked').value;
+  const email = $("cad-email").value.trim();
+  const tipo = document.querySelector('input[name="cad-tipo"]:checked')?.value;
+
+  // Validações
+  if (!email) {
+    mostrarNotificacao("Por favor, preencha o e-mail", "erro");
+    return;
+  }
+
+  if (!tipo) {
+    mostrarNotificacao("Selecione um tipo de conta", "erro");
+    return;
+  }
+
+  if (!email.includes("@")) {
+    mostrarNotificacao("E-mail inválido", "erro");
+    return;
+  }
 
   const usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
 
   if (usuarios.find(u => u.email === email)) {
-    alert("Usuário já cadastrado");
+    mostrarNotificacao("Este e-mail já está cadastrado", "erro");
     return;
   }
 
-  usuarios.push({ email, tipo });
+  usuarios.push({ email, tipo, dataCadastro: new Date().toLocaleString("pt-BR") });
   localStorage.setItem("usuarios", JSON.stringify(usuarios));
 
-  alert("Cadastro realizado com sucesso!");
+  mostrarNotificacao("Cadastro realizado com sucesso! Faça login para continuar", "sucesso");
 
-  fecharCadastro();
-  abrirLogin();
-  $("email").value = email;
+  // Limpar formulário
+  $("form-cadastro").reset();
+  
+  setTimeout(() => {
+    // Trocar para aba de login
+    document.querySelectorAll(".auth-switch-btn").forEach(b => b.classList.remove("active"));
+    document.getElementById("btn-switch-login").classList.add("active");
+    document.querySelectorAll(".auth-form").forEach(f => f.classList.remove("active"));
+    $("form-login").classList.add("active");
+    
+    $("email").value = email;
+  }, 1500);
 });
 
-$("btn-ir-cadastro").addEventListener("click", () => {
-  fecharLogin();
-  abrirCadastro();
-});
-
-$("btn-cancelar-cadastro").addEventListener("click", () => {
-  fecharCadastro();
-  abrirLogin();
-});
+// Os listeners abaixo foram movidos para delegação de eventos acima
 
 /*************************************************
  * LOGIN
@@ -94,23 +242,48 @@ $("btn-cancelar-cadastro").addEventListener("click", () => {
 $("form-login").addEventListener("submit", (e) => {
   e.preventDefault();
 
-  const email = $("email").value;
-  const tipo = document.querySelector('input[name="tipo"]:checked').value;
+  const email = $("email").value.trim();
+  const tipo = document.querySelector('input[name="tipo"]:checked')?.value;
+
+  // Validações
+  if (!email) {
+    mostrarNotificacao("Por favor, preencha o e-mail", "erro");
+    return;
+  }
+
+  if (!tipo) {
+    mostrarNotificacao("Selecione um tipo de conta", "erro");
+    return;
+  }
+
+  if (!email.includes("@")) {
+    mostrarNotificacao("E-mail inválido", "erro");
+    return;
+  }
 
   const usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
   const usuario = usuarios.find(u => u.email === email && u.tipo === tipo);
 
   if (!usuario) {
-    alert("Usuário não encontrado");
+    mostrarNotificacao("E-mail ou tipo de conta incorreto. Verifique suas credenciais.", "erro");
     return;
   }
 
+  // Login bem-sucedido
   state.usuarioLogado = usuario;
   localStorage.setItem("usuarioLogado", JSON.stringify(usuario));
 
+  mostrarNotificacao(`Bem-vindo, ${email}! 🎉`, "sucesso");
+
+  // Limpar formulário
+  $("form-login").reset();
+
   fecharLogin();
   atualizarMenu();
-  trocarPagina("orcamentos");
+  
+  setTimeout(() => {
+    trocarPagina("orcamentos");
+  }, 800);
 });
 
 /*************************************************
@@ -141,7 +314,13 @@ $("form-orcamento").addEventListener("submit", (e) => {
  *************************************************/
 $("btn-solicitar-projeto").addEventListener("click", () => {
   if (!state.usuarioLogado) {
+    mostrarNotificacao("Faça login para solicitar um projeto", "erro");
     abrirLogin();
+    return;
+  }
+
+  if (state.usuarioLogado.tipo !== "cliente") {
+    mostrarNotificacao("Apenas clientes podem solicitar projetos", "erro");
     return;
   }
 
@@ -151,6 +330,7 @@ $("btn-solicitar-projeto").addEventListener("click", () => {
     id: Date.now(),
     cliente: state.usuarioLogado.email,
     progresso: 0,
+    dataSolicitacao: new Date().toLocaleString("pt-BR"),
     tasks: [
       { nome: "Levantamento de carga", feito: false },
       { nome: "Diagrama unifilar", feito: false },
@@ -159,7 +339,11 @@ $("btn-solicitar-projeto").addEventListener("click", () => {
   });
 
   localStorage.setItem("projetos", JSON.stringify(projetos));
-  alert("Projeto solicitado!");
+  mostrarNotificacao("Projeto solicitado com sucesso! 🎉 Você será notificado em breve.", "sucesso");
+  
+  // Limpar formulário
+  $("form-orcamento").reset();
+  $("resultado-orcamento").hidden = true;
 });
 
 /*************************************************
@@ -169,19 +353,41 @@ const carregarProjetos = () => {
   const lista = $("lista-projetos-cliente");
   lista.innerHTML = "";
 
-  const projetos = JSON.parse(localStorage.getItem("projetos")) || [];
+  if (!state.usuarioLogado) {
+    lista.innerHTML = "<li style='text-align: center; color: var(--text-light);'>Faça login para ver seus projetos</li>";
+    return;
+  }
 
-  projetos
-    .filter(p =>
-      state.usuarioLogado.tipo === "engenheiro" ||
-      p.cliente === state.usuarioLogado.email
-    )
-    .forEach(projeto => {
-      const li = document.createElement("li");
-      li.textContent = `Projeto #${projeto.id} - ${projeto.progresso}%`;
-      li.addEventListener("click", () => abrirProjeto(projeto));
-      lista.appendChild(li);
-    });
+  const projetos = JSON.parse(localStorage.getItem("projetos")) || [];
+  const projetosFiltrados = projetos.filter(p =>
+    state.usuarioLogado.tipo === "engenheiro" ||
+    p.cliente === state.usuarioLogado.email
+  );
+
+  if (projetosFiltrados.length === 0) {
+    lista.innerHTML = "<li style='text-align: center; color: var(--text-light);'>Nenhum projeto encontrado</li>";
+    return;
+  }
+
+  projetosFiltrados.forEach(projeto => {
+    const li = document.createElement("li");
+    const tipoProj = state.usuarioLogado.tipo === "cliente" ? "Seu Projeto" : "Projeto do Cliente";
+    
+    li.innerHTML = `
+      <div>
+        <strong>Projeto #${projeto.id}</strong>
+        <p style="font-size: 0.9rem; color: var(--text-light);">
+          Cliente: ${projeto.cliente}
+        </p>
+      </div>
+      <div style="text-align: right;">
+        <span style="font-weight: 600; color: var(--primary);">${projeto.progresso}%</span>
+      </div>
+    `;
+    
+    li.addEventListener("click", () => abrirProjeto(projeto));
+    lista.appendChild(li);
+  });
 };
 
 const abrirProjeto = (projeto) => {
@@ -196,17 +402,25 @@ const abrirProjeto = (projeto) => {
     checkbox.checked = task.feito;
     checkbox.disabled = state.usuarioLogado.tipo !== "engenheiro";
 
+    const label = document.createElement("label");
+    label.textContent = task.nome;
+    label.style.marginLeft = "0.5rem";
+    label.style.cursor = checkbox.disabled ? "not-allowed" : "pointer";
+
     checkbox.addEventListener("change", () => {
       task.feito = checkbox.checked;
       atualizarProgresso(projeto);
     });
 
-    li.append(checkbox, task.nome);
+    li.append(checkbox, label);
     lista.appendChild(li);
   });
 
   $("barra-progresso").value = projeto.progresso;
   $("detalhes-projeto").hidden = false;
+
+  // Scroll para detalhes
+  $("detalhes-projeto").scrollIntoView({ behavior: "smooth" });
 };
 
 const atualizarProgresso = (projeto) => {
@@ -218,12 +432,35 @@ const atualizarProgresso = (projeto) => {
   projetos[index] = projeto;
 
   localStorage.setItem("projetos", JSON.stringify(projetos));
+  
+  // Feedback visual
+  if (projeto.progresso === 100) {
+    mostrarNotificacao("Projeto concluído! 🎉", "sucesso");
+  }
+  
   carregarProjetos();
 };
 
 /*************************************************
  * INICIALIZAÇÃO
  *************************************************/
+
+// Criar usuários de teste se não existirem
+const inicializarDadosTeste = () => {
+  const usuariosExistentes = localStorage.getItem("usuarios");
+  
+  if (!usuariosExistentes) {
+    const usuariosTeste = [
+      { email: "cliente@exemplo.com", tipo: "cliente", dataCadastro: "01/01/2026" },
+      { email: "engenheiro@exemplo.com", tipo: "engenheiro", dataCadastro: "01/01/2026" }
+    ];
+    localStorage.setItem("usuarios", JSON.stringify(usuariosTeste));
+    console.log("✅ Usuários de teste criados");
+  }
+};
+
+inicializarDadosTeste();
+
 const usuarioSalvo = JSON.parse(localStorage.getItem("usuarioLogado"));
 if (usuarioSalvo) {
   state.usuarioLogado = usuarioSalvo;

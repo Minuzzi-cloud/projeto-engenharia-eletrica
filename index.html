@@ -93,58 +93,91 @@
 
 </main>
 
-<!-- ================= LOGIN ================= -->
-<section id="login" class="modal" hidden>
-  <div class="modal-content">
-    <h2>Acesso</h2>
+<!-- ================= AUTH MODAL ================= -->
+<section id="auth-modal" class="modal" hidden>
+  <div class="modal-content auth-modal">
+    <!-- HEADER COM SWITCH -->
+    <div class="auth-header">
+      <div class="auth-switch">
+        <button id="btn-switch-login" class="auth-switch-btn active" data-mode="login">
+          <span>Fazer Login</span>
+        </button>
+        <button id="btn-switch-cadastro" class="auth-switch-btn" data-mode="cadastro">
+          <span>Criar Conta</span>
+        </button>
+        <div class="auth-switch-indicator"></div>
+      </div>
+    </div>
 
-    <form id="form-login">
-      <label for="email">E-mail</label>
-      <input type="email" id="email" required />
+    <!-- LOGIN FORM -->
+    <form id="form-login" class="auth-form active">
+      <h2>Bem-vindo de volta</h2>
+      <p class="auth-subtitle">Entre com suas credenciais</p>
 
-      <fieldset>
-        <legend>Tipo</legend>
-        <label>
-          <input type="radio" name="tipo" value="cliente" required />
-          Cliente
-        </label>
-        <label>
-          <input type="radio" name="tipo" value="engenheiro" />
-          Engenheiro
-        </label>
-      </fieldset>
+      <div class="form-group">
+        <label for="email">E-mail</label>
+        <input type="email" id="email" placeholder="seu@email.com" required />
+      </div>
 
-      <button type="submit">Entrar</button>
+      <div class="form-group">
+        <label>Tipo de Conta</label>
+        <div class="radio-group">
+          <label class="radio-label">
+            <input type="radio" name="tipo" value="cliente" required />
+            <span class="radio-text">
+              <strong>Cliente</strong>
+              <small>Solicitar orçamentos e projetos</small>
+            </span>
+          </label>
+          <label class="radio-label">
+            <input type="radio" name="tipo" value="engenheiro" />
+            <span class="radio-text">
+              <strong>Engenheiro</strong>
+              <small>Gerenciar e executar projetos</small>
+            </span>
+          </label>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-submit">Entrar</button>
+      <p class="auth-helper">Usuários de teste:<br><small>cliente@exemplo.com | engenheiro@exemplo.com</small></p>
     </form>
 
-    <button id="btn-ir-cadastro">Criar conta</button>
-  </div>
-</section>
+    <!-- CADASTRO FORM -->
+    <form id="form-cadastro" class="auth-form">
+      <h2>Criar Conta</h2>
+      <p class="auth-subtitle">Cadastre-se para começar</p>
 
-<!-- ================= CADASTRO ================= -->
-<section id="cadastro" class="modal" hidden>
-  <div class="modal-content">
-    <h2>Cadastro</h2>
+      <div class="form-group">
+        <label for="cad-email">E-mail</label>
+        <input type="email" id="cad-email" placeholder="seu@email.com" required />
+      </div>
 
-    <form id="form-cadastro">
-      <label for="cad-email">E-mail</label>
-      <input type="email" id="cad-email" required />
+      <div class="form-group">
+        <label>Tipo de Conta</label>
+        <div class="radio-group">
+          <label class="radio-label">
+            <input type="radio" name="cad-tipo" value="cliente" required />
+            <span class="radio-text">
+              <strong>Cliente</strong>
+              <small>Solicitar orçamentos e projetos</small>
+            </span>
+          </label>
+          <label class="radio-label">
+            <input type="radio" name="cad-tipo" value="engenheiro" />
+            <span class="radio-text">
+              <strong>Engenheiro</strong>
+              <small>Gerenciar e executar projetos</small>
+            </span>
+          </label>
+        </div>
+      </div>
 
-      <fieldset>
-        <legend>Tipo</legend>
-        <label>
-          <input type="radio" name="cad-tipo" value="cliente" required />
-          Cliente
-        </label>
-        <label>
-          <input type="radio" name="cad-tipo" value="engenheiro" />
-          Engenheiro
-        </label>
-      </fieldset>
-
-      <button type="submit">Cadastrar</button>
-      <button type="button" id="btn-cancelar-cadastro">Cancelar</button>
+      <button type="submit" class="btn-submit">Criar Conta</button>
     </form>
+
+    <!-- BOTÃO FECHAR -->
+    <button id="btn-fechar-auth" class="btn-fechar-modal" aria-label="Fechar">✕</button>
   </div>
 </section>
 
@@ -153,6 +186,17 @@
   <p>© Projeto Acadêmico — Engenharia Elétrica</p>
 </footer>
 
-<script src="app.js"></script>
+<!-- MÓDULOS -->
+<script src="modules/state.js"></script>
+<script src="modules/utils.js"></script>
+<script src="modules/notifications.js"></script>
+<script src="modules/auth.js"></script>
+<script src="modules/ui.js"></script>
+<script src="modules/orcamentos.js"></script>
+<script src="modules/projetos.js"></script>
+<script src="modules/events.js"></script>
+
+<!-- APLICAÇÃO PRINCIPAL -->
+<script src="app-novo.js"></script>
 </body>
 </html>
