@@ -1,162 +1,237 @@
-// Sessão ativa
-let usuarioLogado = null;
-
-// Dados carregados via fetch
-let planos = [];
-let projetos = [];
-
-// Orçamento temporário (antes do login)
-let orcamentoTemp = null;
-
-// SELETORES DOM
-
-const pages = document.querySelectorAll(".page");
-const menuLinks = document.querySelectorAll("[data-page]");
-
-const btnLogin = document.getElementById("btn-login");
-const btnLogout = document.getElementById("btn-logout");
-
-// Orçamento
-const formOrcamento = document.getElementById("form-orcamento");
-const resultadoOrcamento = document.getElementById("resultado-orcamento");
-const valorM2 = document.getElementById("valor-m2");
-const valorTotal = document.getElementById("valor-total");
-const btnSolicitarProjeto = document.getElementById("btn-solicitar-projeto");
-
-// Login
-const modalLogin = document.getElementById("login");
-const formLogin = document.getElementById("form-login");
-
-// SPA / NAVEGAÇÃO
-
-const showPage = (pageId) => {
-  pages.forEach(page => page.classList.remove("active"));
-
-  const page = document.getElementById(pageId);
-  if (page) page.classList.add("active");
-
-  history.pushState({ page: pageId }, "", `#${pageId}`);
+/*************************************************
+ * ESTADO GLOBAL (controlado)
+ *************************************************/
+const state = {
+  usuarioLogado: null,
+  paginaAtual: "home"
 };
 
-menuLinks.forEach(link => {
+/*************************************************
+ * UTILIDADES
+ *************************************************/
+const $ = (id) => document.getElementById(id);
+
+const trocarPagina = (pagina) => {
+  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+  $(pagina).classList.add("active");
+  state.paginaAtual = pagina;
+};
+
+const abrirLogin = () => $("login").hidden = false;
+const fecharLogin = () => $("login").hidden = true;
+const abrirCadastro = () => $("cadastro").hidden = false;
+const fecharCadastro = () => $("cadastro").hidden = true;
+
+/*************************************************
+ * MENU / NAVEGAÇÃO
+ *************************************************/
+document.querySelectorAll("[data-page]").forEach(link => {
   link.addEventListener("click", (e) => {
     e.preventDefault();
-    showPage(e.target.dataset.page);
+    trocarPagina(link.dataset.page);
   });
 });
 
-window.addEventListener("popstate", (e) => {
-  if (e.state?.page) showPage(e.state.page);
+$("btn-login").addEventListener("click", abrirLogin);
+$("btn-logout").addEventListener("click", () => {
+  localStorage.removeItem("usuarioLogado");
+  state.usuarioLogado = null;
+  atualizarMenu();
+  trocarPagina("home");
 });
 
-// LOGIN / LOGOUT
+/*************************************************
+ * MENU DINÂMICO
+ *************************************************/
+const atualizarMenu = () => {
+  const logado = !!state.usuarioLogado;
 
-const loginUsuario = (email, tipo) => {
-  usuarioLogado = { email, tipo };
+  $("btn-login").hidden = logado;
+  $("btn-logout").hidden = !logado;
 
-  sessionStorage.setItem("usuarioLogado", JSON.stringify(usuarioLogado));
-  atualizarMenu();
-  fecharLogin();
-
-  // Se havia orçamento pendente
-  if (orcamentoTemp) {
-    salvarProjeto();
-    orcamentoTemp = null;
-  }
-
-  showPage("projetos");
+  $("menu-projetos").hidden = !logado;
 };
 
-const logoutUsuario = () => {
-  sessionStorage.removeItem("usuarioLogado");
-  usuarioLogado = null;
-  atualizarMenu();
-  showPage("home");
-};
-
-const verificarSessao = () => {
-  const user = sessionStorage.getItem("usuarioLogado");
-  if (user) {
-    usuarioLogado = JSON.parse(user);
-    atualizarMenu();
-  }
-};
-
-// ORÇAMENTO
-
-const calcularOrcamento = (area, valorMetro) => area * valorMetro;
-
-const salvarOrcamentoTemporario = (dados) => {
-  orcamentoTemp = dados;
-  sessionStorage.setItem("orcamentoTemp", JSON.stringify(dados));
-};
-
-const carregarOrcamentoTemp = () => {
-  const temp = sessionStorage.getItem("orcamentoTemp");
-  if (temp) orcamentoTemp = JSON.parse(temp);
-};
-
-formOrcamento.addEventListener("submit", (e) => {
+/*************************************************
+ * CADASTRO
+ *************************************************/
+$("form-cadastro").addEventListener("submit", (e) => {
   e.preventDefault();
 
-  const area = Number(document.getElementById("area").value);
-  const tipo = document.getElementById("tipo-obra").value;
+  const email = $("cad-email").value;
+  const tipo = document.querySelector('input[name="cad-tipo"]:checked').value;
 
-  const plano = planos.find(p => p.tipo === tipo);
-  const total = calcularOrcamento(area, plano.valorMetro);
+  const usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
 
-  valorM2.textContent = `R$ ${plano.valorMetro.toFixed(2)}`;
-  valorTotal.textContent = `R$ ${total.toFixed(2)}`;
+  if (usuarios.find(u => u.email === email)) {
+    alert("Usuário já cadastrado");
+    return;
+  }
 
-  resultadoOrcamento.hidden = false;
+  usuarios.push({ email, tipo });
+  localStorage.setItem("usuarios", JSON.stringify(usuarios));
 
-  salvarOrcamentoTemporario({ area, tipo, total });
+  alert("Cadastro realizado com sucesso!");
+
+  fecharCadastro();
+  abrirLogin();
+  $("email").value = email;
 });
 
-// PROJETOS
+$("btn-ir-cadastro").addEventListener("click", () => {
+  fecharLogin();
+  abrirCadastro();
+});
 
-const calcularProgresso = (tasks) => {
-  const concluidas = tasks.filter(t => t.concluida).length;
-  return Math.round((concluidas / tasks.length) * 100);
-};
+$("btn-cancelar-cadastro").addEventListener("click", () => {
+  fecharCadastro();
+  abrirLogin();
+});
 
-const atualizarTask = (projetoId, taskIndex) => {
-  const projeto = projetos.find(p => p.id === projetoId);
-  projeto.tasks[taskIndex].concluida = !projeto.tasks[taskIndex].concluida;
+/*************************************************
+ * LOGIN
+ *************************************************/
+$("form-login").addEventListener("submit", (e) => {
+  e.preventDefault();
 
-  salvarProjetos();
-  renderDetalhesProjeto(projeto);
-};
+  const email = $("email").value;
+  const tipo = document.querySelector('input[name="tipo"]:checked').value;
 
-// FETCH DE DADOS
+  const usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
+  const usuario = usuarios.find(u => u.email === email && u.tipo === tipo);
 
-const carregarPlanos = async () => {
-  try {
-    showLoading();
-    const res = await fetch("data/planos.json");
-    planos = await res.json();
-  } catch (error) {
-    showError("Erro ao carregar planos");
-  } finally {
-    hideLoading();
+  if (!usuario) {
+    alert("Usuário não encontrado");
+    return;
   }
+
+  state.usuarioLogado = usuario;
+  localStorage.setItem("usuarioLogado", JSON.stringify(usuario));
+
+  fecharLogin();
+  atualizarMenu();
+  trocarPagina("orcamentos");
+});
+
+/*************************************************
+ * ORÇAMENTOS
+ *************************************************/
+const tabelaValores = {
+  residencial: 25,
+  comercial: 35
 };
 
+$("form-orcamento").addEventListener("submit", (e) => {
+  e.preventDefault();
+
+  const tipo = $("tipo-obra").value;
+  const area = Number($("area").value);
+
+  const valorM2 = tabelaValores[tipo];
+  const total = valorM2 * area;
+
+  $("valor-m2").textContent = `R$ ${valorM2}`;
+  $("valor-total").textContent = `R$ ${total}`;
+
+  $("resultado-orcamento").hidden = false;
+});
+
+/*************************************************
+ * SOLICITAR PROJETO
+ *************************************************/
+$("btn-solicitar-projeto").addEventListener("click", () => {
+  if (!state.usuarioLogado) {
+    abrirLogin();
+    return;
+  }
+
+  const projetos = JSON.parse(localStorage.getItem("projetos")) || [];
+
+  projetos.push({
+    id: Date.now(),
+    cliente: state.usuarioLogado.email,
+    progresso: 0,
+    tasks: [
+      { nome: "Levantamento de carga", feito: false },
+      { nome: "Diagrama unifilar", feito: false },
+      { nome: "Memorial descritivo", feito: false }
+    ]
+  });
+
+  localStorage.setItem("projetos", JSON.stringify(projetos));
+  alert("Projeto solicitado!");
+});
+
+/*************************************************
+ * PROJETOS
+ *************************************************/
 const carregarProjetos = () => {
-  fetch("data/projetos.json")
-    .then(res => res.json())
-    .then(data => projetos = data)
-    .catch(() => showError("Erro ao carregar projetos"));
+  const lista = $("lista-projetos-cliente");
+  lista.innerHTML = "";
+
+  const projetos = JSON.parse(localStorage.getItem("projetos")) || [];
+
+  projetos
+    .filter(p =>
+      state.usuarioLogado.tipo === "engenheiro" ||
+      p.cliente === state.usuarioLogado.email
+    )
+    .forEach(projeto => {
+      const li = document.createElement("li");
+      li.textContent = `Projeto #${projeto.id} - ${projeto.progresso}%`;
+      li.addEventListener("click", () => abrirProjeto(projeto));
+      lista.appendChild(li);
+    });
 };
 
-// INIT
+const abrirProjeto = (projeto) => {
+  const lista = $("lista-tasks");
+  lista.innerHTML = "";
 
-const init = async () => {
-  verificarSessao();
-  carregarOrcamentoTemp();
-  await carregarPlanos();
+  projeto.tasks.forEach((task, index) => {
+    const li = document.createElement("li");
+
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.checked = task.feito;
+    checkbox.disabled = state.usuarioLogado.tipo !== "engenheiro";
+
+    checkbox.addEventListener("change", () => {
+      task.feito = checkbox.checked;
+      atualizarProgresso(projeto);
+    });
+
+    li.append(checkbox, task.nome);
+    lista.appendChild(li);
+  });
+
+  $("barra-progresso").value = projeto.progresso;
+  $("detalhes-projeto").hidden = false;
+};
+
+const atualizarProgresso = (projeto) => {
+  const feitos = projeto.tasks.filter(t => t.feito).length;
+  projeto.progresso = Math.round((feitos / projeto.tasks.length) * 100);
+
+  const projetos = JSON.parse(localStorage.getItem("projetos")) || [];
+  const index = projetos.findIndex(p => p.id === projeto.id);
+  projetos[index] = projeto;
+
+  localStorage.setItem("projetos", JSON.stringify(projetos));
   carregarProjetos();
-  showPage("home");
 };
 
-document.addEventListener("DOMContentLoaded", init);
+/*************************************************
+ * INICIALIZAÇÃO
+ *************************************************/
+const usuarioSalvo = JSON.parse(localStorage.getItem("usuarioLogado"));
+if (usuarioSalvo) {
+  state.usuarioLogado = usuarioSalvo;
+  atualizarMenu();
+}
+
+document.addEventListener("click", () => {
+  if (state.paginaAtual === "projetos" && state.usuarioLogado) {
+    carregarProjetos();
+  }
+});

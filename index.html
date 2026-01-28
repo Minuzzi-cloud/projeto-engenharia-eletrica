@@ -8,6 +8,8 @@
 </head>
 
 <body>
+
+<!-- ================= HEADER ================= -->
 <header class="header">
   <div class="container header-content">
     <h1 class="logo">Engenharia Elétrica</h1>
@@ -16,7 +18,11 @@
       <ul class="menu">
         <li><a href="#" data-page="home">Home</a></li>
         <li><a href="#" data-page="orcamentos">Orçamentos</a></li>
-        <li><a href="#" data-page="projetos">Projetos</a></li>
+        <li>
+          <a href="#" data-page="projetos" id="menu-projetos" hidden>
+            Projetos
+          </a>
+        </li>
         <li><button id="btn-login">Login</button></li>
         <li><button id="btn-logout" hidden>Sair</button></li>
       </ul>
@@ -24,93 +30,80 @@
   </div>
 </header>
 
+<!-- ================= MAIN (SPA) ================= -->
 <main id="app">
 
-<section id="home" class="page active" aria-labelledby="home-title">
-  <div class="container">
-    <h2 id="home-title">Soluções em Engenharia Elétrica</h2>
-
-    <p>
-      Desenvolvemos projetos elétricos residenciais e comerciais com segurança,
-      eficiência e conformidade técnica.
-    </p>
-
-    <button data-page="orcamentos" class="btn-primary">
-      Solicitar orçamento
-    </button>
-  </div>
-</section>
-
-<section id="orcamentos" class="page" aria-labelledby="orcamento-title">
-  <div class="container">
-    <h2 id="orcamento-title">Orçamento de Projeto Elétrico</h2>
-
-    <form id="form-orcamento">
-      <label for="tipo-obra">Tipo de obra</label>
-      <select id="tipo-obra" required>
-        <option value="">Selecione</option>
-        <option value="residencial">Residencial</option>
-        <option value="comercial">Comercial</option>
-      </select>
-
-      <label for="area">Área da obra (m²)</label>
-      <input type="number" id="area" min="10" required />
-
-      <!-- VISÍVEL APENAS PARA ENGENHEIRO -->
-      <div id="valor-metro-container" hidden>
-        <label for="valor-metro">Valor por m² (R$)</label>
-        <input type="number" id="valor-metro" />
-      </div>
-
-      <button type="submit">Calcular orçamento</button>
-    </form>
-
-    <div id="resultado-orcamento" hidden>
-      <p>Valor por m²: <strong id="valor-m2"></strong></p>
-      <p>Valor total: <strong id="valor-total"></strong></p>
-
-      <button id="btn-solicitar-projeto">
-        Solicitar projeto
+  <!-- HOME -->
+  <section id="home" class="page active" aria-labelledby="home-title">
+    <div class="container">
+      <h2 id="home-title">Soluções em Engenharia Elétrica</h2>
+      <p>
+        Projetos elétricos residenciais e comerciais com segurança,
+        eficiência e conformidade técnica.
+      </p>
+      <button class="btn-primary" data-page="orcamentos">
+        Solicitar orçamento
       </button>
     </div>
-  </div>
-</section>
+  </section>
 
-<section id="projetos" class="page" aria-labelledby="projetos-title">
-  <div class="container">
-    <h2 id="projetos-title">Projetos</h2>
+  <!-- ORÇAMENTOS -->
+  <section id="orcamentos" class="page" aria-labelledby="orcamento-title">
+    <div class="container">
+      <h2 id="orcamento-title">Orçamento</h2>
 
-    <!-- CLIENTE -->
-    <div id="projetos-cliente" hidden>
+      <form id="form-orcamento">
+        <label for="tipo-obra">Tipo de obra</label>
+        <select id="tipo-obra" required>
+          <option value="">Selecione</option>
+          <option value="residencial">Residencial</option>
+          <option value="comercial">Comercial</option>
+        </select>
+
+        <label for="area">Área da obra (m²)</label>
+        <input type="number" id="area" min="10" required />
+
+        <button type="submit">Calcular</button>
+      </form>
+
+      <div id="resultado-orcamento" hidden>
+        <p>Valor por m²: <strong id="valor-m2"></strong></p>
+        <p>Valor total: <strong id="valor-total"></strong></p>
+        <button id="btn-solicitar-projeto" class="btn-primary">
+          Solicitar projeto
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROJETOS -->
+  <section id="projetos" class="page" aria-labelledby="projetos-title">
+    <div class="container">
+      <h2 id="projetos-title">Projetos</h2>
+
       <ul id="lista-projetos-cliente"></ul>
+
+      <article id="detalhes-projeto" hidden>
+        <h3>Detalhes do Projeto</h3>
+        <ul id="lista-tasks"></ul>
+        <progress id="barra-progresso" value="0" max="100"></progress>
+      </article>
     </div>
+  </section>
 
-    <!-- ENGENHEIRO -->
-    <div id="projetos-engenheiro" hidden>
-      <ul id="lista-projetos-engenheiro"></ul>
-    </div>
+</main>
 
-    <!-- DETALHES DO PROJETO -->
-    <article id="detalhes-projeto" hidden>
-      <h3>Detalhes do Projeto</h3>
-
-      <ul id="lista-tasks"></ul>
-
-      <progress id="barra-progresso" value="0" max="100"></progress>
-    </article>
-  </div>
-</section>
-
-<section id="login" class="modal" aria-labelledby="login-title" hidden>
+<!-- ================= LOGIN ================= -->
+<section id="login" class="modal" hidden>
   <div class="modal-content">
-    <h2 id="login-title">Login</h2>
+    <h2>Acesso</h2>
 
     <form id="form-login">
       <label for="email">E-mail</label>
       <input type="email" id="email" required />
 
       <fieldset>
-        <legend>Tipo de usuário</legend>
+        <legend>Tipo</legend>
         <label>
           <input type="radio" name="tipo" value="cliente" required />
           Cliente
@@ -122,18 +115,44 @@
       </fieldset>
 
       <button type="submit">Entrar</button>
-      <button type="button" id="btn-fechar-login">Cancelar</button>
+    </form>
+
+    <button id="btn-ir-cadastro">Criar conta</button>
+  </div>
+</section>
+
+<!-- ================= CADASTRO ================= -->
+<section id="cadastro" class="modal" hidden>
+  <div class="modal-content">
+    <h2>Cadastro</h2>
+
+    <form id="form-cadastro">
+      <label for="cad-email">E-mail</label>
+      <input type="email" id="cad-email" required />
+
+      <fieldset>
+        <legend>Tipo</legend>
+        <label>
+          <input type="radio" name="cad-tipo" value="cliente" required />
+          Cliente
+        </label>
+        <label>
+          <input type="radio" name="cad-tipo" value="engenheiro" />
+          Engenheiro
+        </label>
+      </fieldset>
+
+      <button type="submit">Cadastrar</button>
+      <button type="button" id="btn-cancelar-cadastro">Cancelar</button>
     </form>
   </div>
 </section>
 
-</main>
-
+<!-- ================= FOOTER ================= -->
 <footer class="footer">
-  <p>&copy; 2026 - Projeto Acadêmico</p>
+  <p>© Projeto Acadêmico — Engenharia Elétrica</p>
 </footer>
 
 <script src="app.js"></script>
-
 </body>
 </html>
