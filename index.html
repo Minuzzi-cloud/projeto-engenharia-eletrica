@@ -8,7 +8,7 @@
 </head>
 
 <body>
-    <header class="header">
+<header class="header">
   <div class="container header-content">
     <h1 class="logo">Engenharia Elétrica</h1>
 
@@ -23,5 +23,117 @@
     </nav>
   </div>
 </header>
+
+<main id="app">
+
+<section id="home" class="page active" aria-labelledby="home-title">
+  <div class="container">
+    <h2 id="home-title">Soluções em Engenharia Elétrica</h2>
+
+    <p>
+      Desenvolvemos projetos elétricos residenciais e comerciais com segurança,
+      eficiência e conformidade técnica.
+    </p>
+
+    <button data-page="orcamentos" class="btn-primary">
+      Solicitar orçamento
+    </button>
+  </div>
+</section>
+
+<section id="orcamentos" class="page" aria-labelledby="orcamento-title">
+  <div class="container">
+    <h2 id="orcamento-title">Orçamento de Projeto Elétrico</h2>
+
+    <form id="form-orcamento">
+      <label for="tipo-obra">Tipo de obra</label>
+      <select id="tipo-obra" required>
+        <option value="">Selecione</option>
+        <option value="residencial">Residencial</option>
+        <option value="comercial">Comercial</option>
+      </select>
+
+      <label for="area">Área da obra (m²)</label>
+      <input type="number" id="area" min="10" required />
+
+      <!-- VISÍVEL APENAS PARA ENGENHEIRO -->
+      <div id="valor-metro-container" hidden>
+        <label for="valor-metro">Valor por m² (R$)</label>
+        <input type="number" id="valor-metro" />
+      </div>
+
+      <button type="submit">Calcular orçamento</button>
+    </form>
+
+    <div id="resultado-orcamento" hidden>
+      <p>Valor por m²: <strong id="valor-m2"></strong></p>
+      <p>Valor total: <strong id="valor-total"></strong></p>
+
+      <button id="btn-solicitar-projeto">
+        Solicitar projeto
+      </button>
+    </div>
+  </div>
+</section>
+
+<section id="projetos" class="page" aria-labelledby="projetos-title">
+  <div class="container">
+    <h2 id="projetos-title">Projetos</h2>
+
+    <!-- CLIENTE -->
+    <div id="projetos-cliente" hidden>
+      <ul id="lista-projetos-cliente"></ul>
+    </div>
+
+    <!-- ENGENHEIRO -->
+    <div id="projetos-engenheiro" hidden>
+      <ul id="lista-projetos-engenheiro"></ul>
+    </div>
+
+    <!-- DETALHES DO PROJETO -->
+    <article id="detalhes-projeto" hidden>
+      <h3>Detalhes do Projeto</h3>
+
+      <ul id="lista-tasks"></ul>
+
+      <progress id="barra-progresso" value="0" max="100"></progress>
+    </article>
+  </div>
+</section>
+
+<section id="login" class="modal" aria-labelledby="login-title" hidden>
+  <div class="modal-content">
+    <h2 id="login-title">Login</h2>
+
+    <form id="form-login">
+      <label for="email">E-mail</label>
+      <input type="email" id="email" required />
+
+      <fieldset>
+        <legend>Tipo de usuário</legend>
+        <label>
+          <input type="radio" name="tipo" value="cliente" required />
+          Cliente
+        </label>
+        <label>
+          <input type="radio" name="tipo" value="engenheiro" />
+          Engenheiro
+        </label>
+      </fieldset>
+
+      <button type="submit">Entrar</button>
+      <button type="button" id="btn-fechar-login">Cancelar</button>
+    </form>
+  </div>
+</section>
+
+</main>
+
+<footer class="footer">
+  <p>&copy; 2026 - Projeto Acadêmico</p>
+</footer>
+
+<script src="app.js"></script>
+
 </body>
 </html>
