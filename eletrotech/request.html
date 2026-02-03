@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EletroTech Engenharia Elétrica - Solicitar Serviço</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="request">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">EletroTech</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="services.html">Serviços</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="request.html">Solicitar Serviço</a></li>
+                    <li class="nav-item"><a class="nav-link" href="dashboard.html">Painel de Solicitações</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div id="alert-container"></div>
+
+    <main class="container my-4">
+        <section>
+            <h1 class="mb-4">Solicitar Serviço</h1>
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <form id="service-form" class="card p-4">
+                        <div class="mb-3">
+                            <label for="cliente" class="form-label">Nome do Cliente</label>
+                            <input type="text" class="form-control" id="cliente" name="cliente" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="tipo" class="form-label">Tipo de Serviço</label>
+                            <select class="form-select" id="tipo" name="tipo" required>
+                                <option value="">Carregando...</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="descricao" class="form-label">Descrição</label>
+                            <textarea class="form-control" id="descricao" name="descricao" rows="3" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="urgencia" class="form-label">Nível de Urgência</label>
+                            <select class="form-select" id="urgencia" name="urgencia" required>
+                                <option value="baixa">Baixa</option>
+                                <option value="media">Média</option>
+                                <option value="alta">Alta</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Enviar Solicitação</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-dark text-white text-center py-3">
+        <p>&copy; 2024 EletroTech Engenharia Elétrica. Todos os direitos reservados.</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
