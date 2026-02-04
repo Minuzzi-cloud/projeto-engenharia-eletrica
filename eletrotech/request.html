@@ -43,6 +43,18 @@
                                 <option value="">Carregando...</option>
                             </select>
                         </div>
+                        <div class="mb-3" id="dynamic-fields" style="display: none;">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label for="qtdTomadas" class="form-label">Quantidade de Tomadas</label>
+                                    <input type="number" class="form-control" id="qtdTomadas" name="qtdTomadas" min="0" value="0">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="qtdInterruptores" class="form-label">Quantidade de Interruptores</label>
+                                    <input type="number" class="form-control" id="qtdInterruptores" name="qtdInterruptores" min="0" value="0">
+                                </div>
+                            </div>
+                        </div>
                         <div class="mb-3">
                             <label for="descricao" class="form-label">Descrição</label>
                             <textarea class="form-control" id="descricao" name="descricao" rows="3" required></textarea>
